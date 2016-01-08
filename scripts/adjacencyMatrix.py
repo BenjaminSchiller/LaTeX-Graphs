@@ -26,7 +26,7 @@ if len(sys.argv) != 9:
 	sys.stderr.write("  got: " + str(sys.argv[1:]) + "\n")
 	sys.stderr.write("  1: number of vertices\n")
 	sys.stderr.write("  2: direction [d,u]\n")
-	sys.stderr.write("  3: diagonal [define,*]\n")
+	sys.stderr.write("  3: diagonal [define,weight,*]\n")
 	sys.stderr.write("  4: names to use [index,char,none]\n")
 	sys.stderr.write("  5: label\n")
 	sys.stderr.write("  6: caption\n")
@@ -98,9 +98,9 @@ if direction == 'd':
 		if not names_ == 'none':
 			sys.stdout.write(str(names[i]))
 		for j in range(0,vertices):
-			if i == j and not names_ == 'none' and not diagonal == 'define':
+			if i == j and not names_ == 'none' and not (diagonal == 'define' or diagonal == 'weight'):
 				sys.stdout.write(sep)
-			if i == j and not diagonal == 'define':
+			if i == j and not (diagonal == 'define' or diagonal == 'weight'):
 				sys.stdout.write(diagonal)
 			else:
 				sys.stdout.write(sep+elements[index])
@@ -114,10 +114,10 @@ else:
 		if not names_ == 'none':
 			sys.stdout.write(str(names[i]))
 		for j in range(0,vertices):
-			if j < i or (i == j and not names_ == 'none' and not diagonal == 'define'):
+			if j < i or (i == j and not names_ == 'none' and not diagonal == 'define' and not diagonal == 'weight'):
 				sys.stdout.write(sep)
 			if j == i:
-				if not diagonal == 'define':
+				if not (diagonal == 'define' or diagonal == 'weight'):
 					sys.stdout.write(diagonal)
 				else:
 					sys.stdout.write(sep+elements[index])

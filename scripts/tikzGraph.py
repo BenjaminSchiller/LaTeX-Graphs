@@ -8,7 +8,7 @@ if len(sys.argv) != 10:
 	sys.stderr.write("  got: " + str(sys.argv[1:]) + "\n")
 	sys.stderr.write("  1: number of vertices\n")
 	sys.stderr.write("  2: direction [d,u]\n")
-	sys.stderr.write("  3: diagonal [define,*]\n")
+	sys.stderr.write("  3: diagonal [define,weight,*]\n")
 	sys.stderr.write("  4: names to use [index,char,none]\n")
 	sys.stderr.write("  5: label\n")
 	sys.stderr.write("  6: caption\n")
@@ -60,6 +60,17 @@ else:
 if not (label == '' and caption == ''):
 	print "\\begin{figure}"
 
+weights = [None] * vertices
+if diagonal == 'weight':
+	index = 0
+	for i in range(0,vertices):
+		for j in range(0,vertices):
+			if direction == 'u' and i > j:
+				continue
+			if i == j:
+				weights[i] = elements[index]
+			index += 1
+
 if placement == 'line':
 	print "\\begin{tikzpicture}"
 	print "\\def \\n {" + str(vertices) + "}"
@@ -73,31 +84,31 @@ if placement == 'line':
 	print "}"
 	print "\\end{tikzpicture}"
 elif placement == 'circle':
+	r = 3
 	print "\\begin{tikzpicture}"
-	print "\\usetikzlibrary{arrows}"
-	if direction == 'd':
-		print "\\tikzset{edge/.style = {->, thick}}"
-	else:
-		print "\\tikzset{edge/.style = {-, thick}}"
-	print "\\tikzset{vertex/.style = {shape=circle, draw, thick, minimum size=2em}}"
-	print "\\def \\n {" + str(vertices) + "}"
 	print "\\def \\radius {3cm}"
 	for i in range(0,vertices):
-		# print "\\node[vertex](v" + str(i) + ") at ({360/\\n * (" + str(i) +")}:\\radius) {" + str(names[i]) + "};"
 		pos = (-i * 360 / vertices + 90) % 360
-		print "\\node[vertex](v" + str(i) + ") at (" + str(pos) + ":\\radius) {" + str(names[i]) + "};"
+		if weights[i] == None or weights[i] == '':
+			print "\\draw (%d:%s) node[circle,draw] (v%d) {%s};" % (pos, r, i, str(names[i]))
+		else:
+			print "\\draw (%d:%s) node[circle,draw,label=%s] (v%d) {%s};" % (pos, r, weights[i], i, str(names[i]))
 	index = 0
 	for i in range(0,vertices):
 		for j in range(0,vertices):
+			if i == j and diagonal == 'weight':
+				index += 1
+				continue
 			if i == j and not diagonal == 'define':
 				continue
 			if i > j and direction == 'u':
 				continue
-			if not (elements[index] == '0' or elements[index] == ' ' or elements[index] == ''):
+			if not (elements[index] == '0' or elements[index] == ' ' or elements[index] == '' or elements[index] == None):
+				edgeLabel = "" if (elements[index] == "1") else (" node [fill=white] {%s}" % elements[index])
 				if direction == 'u':
-					print "\\draw[edge] (v" + str(i) + ") to (v" + str(j) + ");"
+					print "\\path[-] (v%d) edge [thick] %s (v%d);" % (i, edgeLabel, j)
 				else:
-					print "\\draw[edge] (v" + str(i) + ") to[bend left] (v" + str(j) + ");"
+					print "\\path[->] (v%d) edge [bend left, thick] %s (v%d);" % (i, edgeLabel, j)
 			index += 1
 	print "\\end{tikzpicture}"
 
